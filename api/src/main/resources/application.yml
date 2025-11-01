@@ -1,0 +1,36 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: rag-api
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.n26.rag: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Custom application properties
+app:
+  config-path: /app/config.yaml
