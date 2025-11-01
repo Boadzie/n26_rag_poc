@@ -1,0 +1,60 @@
+# RAG Pipeline Configuration
+
+# Vector Database Configuration
+vector_db:
+  type: "chroma"  # chromadb
+  host: "chromadb"
+  port: 8000
+  collection_name: "n26_docs"
+  persist_directory: "/data/chroma"
+
+# Embedding Configuration
+embedding:
+  provider: "gemini"
+  model: "models/text-embedding-004"
+  api_key_env: "GEMINI_API_KEY"
+  batch_size: 100
+  dimensions: 768
+
+# Chunking Strategy Configuration
+chunking:
+  strategy: "paragraph"  # paragraph-based chunking
+  chunk_size: 1000
+  chunk_overlap: 200
+  min_chunk_size: 100
+  separators: ["\n\n", "\n", ". ", " ", ""]
+
+# LLM Configuration (for query/generation)
+llm:
+  provider: "gemini"
+  model: "gemini-2.0-flash-exp"
+  api_key_env: "GEMINI_API_KEY"
+  temperature: 0.7
+  max_tokens: 1024
+  top_p: 0.95
+  top_k: 40
+
+# Retrieval Configuration
+retrieval:
+  top_k: 5
+  similarity_threshold: 0.0  # Lowered for L2 distance compatibility
+  search_type: "similarity"  # similarity, mmr
+
+# Ingestion Configuration
+ingestion:
+  data_directory: "/data/documents"
+  supported_formats: ["txt", "md", "pdf"]
+  batch_size: 50
+
+# API Configuration
+api:
+  port: 8080
+  host: "0.0.0.0"
+  max_query_length: 500
+  timeout_seconds: 30
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "json"  # json or text
+  output: "stdout"
