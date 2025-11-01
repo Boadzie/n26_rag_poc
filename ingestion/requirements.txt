@@ -1,0 +1,21 @@
+# Core dependencies
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# LlamaIndex Core and extensions (latest compatible versions)
+llama-index-core==0.14.7
+llama-index-vector-stores-chroma==0.5.3
+llama-index-embeddings-gemini==0.4.1
+llama-index-llms-gemini==0.6.1
+
+# Docling for robust document loading
+llama-index-readers-docling==0.4.1
+
+# Vector database
+chromadb==0.5.20
+
+# Embeddings and LLM
+google-generativeai
+
+# Utilities
+python-dateutil==2.8.2
