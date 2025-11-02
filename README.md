@@ -99,16 +99,87 @@ This will:
 }
 ```
 
-### 5. Query the API
+### 5. Test the API
+
+#### Test 1: Health Check
 
 ```bash
-# Health check
-curl http://localhost:8080/api/v1/health
+curl http://localhost:8080/api/v1/health | jq
+```
 
-# Example query
+Expected response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-15T...",
+  "services": {
+    "chromadb": {
+      "status": "healthy"
+    },
+    "gemini": {
+      "status": "healthy",
+      "message": "API key configured"
+    }
+  }
+}
+```
+
+#### Test 2: Simple Query
+
+```bash
 curl -X POST http://localhost:8080/api/v1/query \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is the N26 backend architecture?"}'
+  -d '{"question": "What is N26?"}' | jq
+```
+
+#### Test 3: Backend Architecture Query
+
+```bash
+curl -X POST http://localhost:8080/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What technologies are used in the N26 backend?"}' | jq
+```
+
+#### Test 4: Security Query
+
+```bash
+curl -X POST http://localhost:8080/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What security practices does N26 implement?"}' | jq
+```
+
+#### Run Complete Test Suite
+
+```bash
+./test_pipeline.sh
+```
+
+This will run all tests automatically and show you the results.
+
+### Understanding the Response
+
+```json
+{
+  "question": "What technologies are used in the N26 backend?",
+  "answer": "The backend is composed of multiple microservices written in Kotlin and Java...",
+  "sources": [
+    {
+      "id": "sample_doc_chunk_1",
+      "content": "Relevant document chunk...",
+      "source": "/data/sample_doc.md",
+      "score": 0.92,
+      "metadata": {...}
+    }
+  ],
+  "metadata": {
+    "retrievalTimeMs": 245,      // Time to search vectors
+    "llmTimeMs": 1823,            // Time to generate answer
+    "totalTimeMs": 2068,          // Total request time
+    "documentsRetrieved": 5,      // Number of relevant chunks
+    "model": "gemini-2.0-flash-exp",
+    "timestamp": "2025-01-15T10:30:00Z"
+  }
+}
 ```
 
 ## Helper Scripts
@@ -356,7 +427,25 @@ Prometheus metrics available at `/actuator/prometheus`:
 
 ## Troubleshooting
 
-### Services won't start
+### Issue 1: Docker not running
+
+```bash
+# Error: Cannot connect to the Docker daemon
+# Solution: Start Docker Desktop application
+```
+
+### Issue 2: Port already in use
+
+```bash
+# Error: port is already allocated
+# Solution: Stop conflicting services
+docker-compose down
+lsof -ti:8080 | xargs kill -9  # Kill process on port 8080
+lsof -ti:8000 | xargs kill -9  # Kill process on port 8000
+docker-compose up -d
+```
+
+### Issue 3: Services won't start
 
 ```bash
 # Check logs
@@ -368,9 +457,17 @@ docker-compose down
 docker-compose up -d
 ```
 
-### Ingestion fails
+### Issue 4: Ingestion fails with API error
 
 ```bash
+# Check GEMINI_API_KEY is set correctly
+echo $GEMINI_API_KEY
+
+# Verify it's in .env file
+cat .env
+
+# Check Gemini API quota: https://console.cloud.google.com/apis/
+
 # Verify API key is set
 echo $GEMINI_API_KEY
 
@@ -389,9 +486,15 @@ docker-compose logs chromadb
 # - ChromaDB not healthy before ingestion
 ```
 
-### API returns 503 or "No relevant documents found"
+### Issue 5: API returns 503 or "No relevant documents found"
 
 ```bash
+# Check if ingestion was run
+docker-compose logs chromadb | grep "n26_docs"
+
+# Re-run ingestion
+./run_ingestion.sh
+
 # Check health endpoint
 curl http://localhost:8080/api/v1/health
 
@@ -456,13 +559,75 @@ python ingest.py
 - OkHttp 4.12.0
 - Gson for JSON parsing
 
+## Adding More Documents
+
+```bash
+# 1. Add your documents to the data/documents/ directory
+cp your-docs/*.md ./data/documents/
+
+# 2. Re-run ingestion with --reset flag to clear old data
+./run_ingestion.sh
+
+# 3. Test with new queries
+curl -X POST http://localhost:8080/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Your question about new documents"}' | jq
+```
+
+## Monitoring
+
+### View Real-time Logs
+
+```bash
+# API logs
+docker-compose logs -f api
+
+# ChromaDB logs
+docker-compose logs -f chromadb
+
+# All logs
+docker-compose logs -f
+
+# Press Ctrl+C to stop following
+```
+
+### Check Metrics
+
+```bash
+# Prometheus metrics
+curl http://localhost:8080/actuator/prometheus
+
+# Spring Boot actuator
+curl http://localhost:8080/actuator | jq
+```
+
+### Check ChromaDB Collections
+
+```bash
+# List collections
+curl http://localhost:8000/api/v1/collections | jq
+
+# Get collection details
+curl http://localhost:8000/api/v1/collections/n26_docs | jq
+```
+
+## Performance Tips
+
+1. **Adjust chunk size**: Edit `config.yaml` → `chunking.chunk_size`
+2. **Change retrieval count**: Edit `config.yaml` → `retrieval.top_k`
+3. **Tune LLM parameters**: Edit `config.yaml` → `llm.temperature`
+4. **Monitor latency**: Check `metadata.totalTimeMs` in responses
+
 ## Stopping the Services
 
 ```bash
-# Stop all services
+# Stop services (keeps data)
+docker-compose stop
+
+# Stop and remove containers (keeps data)
 docker-compose down
 
-# Stop and remove volumes (clears data)
+# Stop and remove everything including data
 docker-compose down -v
 ```
 
