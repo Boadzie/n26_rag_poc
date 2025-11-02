@@ -16,7 +16,7 @@ If Docker is not installed, download it from: https://www.docker.com/products/do
 ### 1. Navigate to Project Directory
 
 ```bash
-cd /Users/boadzie/Documents/Dev_center/Projects/n26_rag
+cd /n26_rag
 ```
 
 ### 2. Verify Environment Variables
@@ -27,6 +27,7 @@ cat .env
 ```
 
 Should show:
+
 ```
 GEMINI_API_KEY=your_actual_key_here
 ```
@@ -42,6 +43,7 @@ docker compose ps
 ```
 
 Expected output:
+
 ```
 NAME              STATUS          PORTS
 rag-api          Up (healthy)    0.0.0.0:8080->8080/tcp
@@ -68,6 +70,7 @@ docker compose logs -f chromadb
 ```
 
 Expected output:
+
 ```json
 {"timestamp": "...", "level": "INFO", "message": "Ingestion pipeline initialized", ...}
 {"timestamp": "...", "level": "INFO", "message": "Loaded all documents", "total_count": 1}
@@ -86,6 +89,7 @@ curl http://localhost:8080/api/v1/health | jq
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",

@@ -1,16 +1,18 @@
 # RAG Pipeline PoC
 
-A production-ready Retrieval-Augmented Generation (RAG) system built with **LlamaIndex** and **Docling** for robust document processing, using Google Gemini for embeddings and text generation, with ChromaDB as the vector store.
+> A production-ready Retrieval-Augmented Generation (RAG) system built with **LlamaIndex** and **Docling** for robust document processing, using Google Gemini for embeddings and text generation, with ChromaDB as the vector store.
 
 ## Architecture
 
 This system uses a polyglot architecture:
+
 - **Python** (`ingest.py`): Batch data ingestion using **LlamaIndex** framework with **Docling** reader for robust document parsing
 - **Kotlin/Spring Boot** (`api`): REST API service for real-time queries
 - **ChromaDB 0.5.20**: Vector database for similarity search (API v2)
 - **Google Gemini**: Embedding model (text-embedding-004) and LLM (gemini-2.0-flash-exp)
 
 ### Key Technologies
+
 - **LlamaIndex 0.14.7**: Production-ready RAG framework with automatic optimization
 - **Docling 0.4.1**: Advanced document reader with layout-aware extraction for PDFs, DOCX, Markdown, and more
 - **ChromaDB 0.5.20**: Latest vector database with improved performance
@@ -69,14 +71,22 @@ docker-compose ps
 ```
 
 This will:
+
 - Load documents from `data/documents/` directory using **Docling** reader (robust PDF, DOCX, Markdown parsing)
 - Parse and chunk using **LlamaIndex** SentenceSplitter (paragraph-based strategy, 1000 chars, 200 overlap)
 - Generate embeddings using Gemini text-embedding-004 (768 dimensions)
 - Store in ChromaDB collection with automatic batching and error handling
 
 **Expected output:**
+
 ```json
-{"timestamp": "2025-11-01T06:43:31.454780", "level": "INFO", "message": "Ingestion pipeline completed successfully", "total_documents": 1, "total_time_seconds": 3.26}
+{
+  "timestamp": "2025-11-01T06:43:31.454780",
+  "level": "INFO",
+  "message": "Ingestion pipeline completed successfully",
+  "total_documents": 1,
+  "total_time_seconds": 3.26
+}
 ```
 
 ### 5. Query the API
@@ -98,6 +108,7 @@ curl -X POST http://localhost:8080/api/v1/query \
 Query the RAG system with a natural language question.
 
 **Request:**
+
 ```json
 {
   "question": "What technologies does N26 use for the backend?"
@@ -105,6 +116,7 @@ Query the RAG system with a natural language question.
 ```
 
 **Response:**
+
 ```json
 {
   "question": "What technologies does N26 use for the backend?",
@@ -138,6 +150,7 @@ Query the RAG system with a natural language question.
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -193,7 +206,7 @@ chunking:
 # Retrieval Settings
 retrieval:
   top_k: 5
-  similarity_threshold: 0.0  # Lowered for L2 distance compatibility
+  similarity_threshold: 0.0 # Lowered for L2 distance compatibility
   search_type: "similarity"
 ```
 
@@ -247,6 +260,7 @@ All services emit JSON-structured logs:
 ### Metrics
 
 Prometheus metrics available at `/actuator/prometheus`:
+
 - `http_server_requests_seconds`: API latency
 - `jvm_memory_used_bytes`: Memory usage
 - Custom metrics for RAG operations
@@ -346,12 +360,14 @@ python ingest.py
 ### Key Dependencies
 
 **Python (Ingestion)**:
+
 - llama-index-core==0.14.7
 - llama-index-readers-docling==0.4.1
 - llama-index-vector-stores-chroma==0.5.3
 - chromadb==0.5.20
 
 **Kotlin (API)**:
+
 - Spring Boot 3.2.1
 - OkHttp 4.12.0
 - Gson for JSON parsing
