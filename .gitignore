@@ -38,3 +38,4 @@ data/chroma/
 # Logs
 logs/
 *.log
+.claude/
