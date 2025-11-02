@@ -55,6 +55,16 @@ cp your-docs/*.md ./data/documents/
 
 ### 3. Start the Services
 
+**Option A: Using the startup script (recommended)**
+
+```bash
+./start.sh
+```
+
+This will automatically validate your environment, start all services, and wait for them to be healthy.
+
+**Option B: Manual startup**
+
 ```bash
 # Start ChromaDB and API service
 docker-compose up -d
@@ -99,6 +109,78 @@ curl http://localhost:8080/api/v1/health
 curl -X POST http://localhost:8080/api/v1/query \
   -H "Content-Type: application/json" \
   -d '{"question": "What is the N26 backend architecture?"}'
+```
+
+## Helper Scripts
+
+The project includes three automation scripts to simplify common operations:
+
+### start.sh
+
+Complete startup script with automatic health checks and validation.
+
+```bash
+./start.sh
+```
+
+**Features:**
+- Validates Docker installation and daemon status
+- Checks .env file and GEMINI_API_KEY configuration
+- Starts all services with docker-compose
+- Waits for services to become healthy (API and ChromaDB)
+- Displays service status and next steps
+
+**Use this when:** Starting the system for the first time or after a restart.
+
+### run_ingestion.sh
+
+Runs the data ingestion pipeline in Docker.
+
+```bash
+./run_ingestion.sh
+```
+
+**Features:**
+- Validates environment configuration
+- Ensures ChromaDB is running
+- Builds ingestion Docker image
+- Executes ingestion with LlamaIndex + Docling
+- Processes documents from `data/documents/` directory
+
+**Use this when:** Adding new documents or resetting the vector database.
+
+### test_pipeline.sh
+
+End-to-end testing script for the complete RAG pipeline.
+
+```bash
+./test_pipeline.sh
+```
+
+**Features:**
+- Verifies all services are running and healthy
+- Tests health endpoint (`/api/v1/health`)
+- Executes sample queries and validates responses
+- Tests validation error handling
+- Checks Prometheus metrics availability
+- Displays performance metrics (retrieval, LLM, and total time)
+
+**Use this when:** Validating the system after deployment or changes.
+
+**Example output:**
+```
+Step 5: Testing query endpoint...
+Question: 'What is the N26 backend architecture?'
+
+✓ Query successful!
+
+Answer:
+N26's backend is composed of multiple microservices written in Kotlin and Java...
+
+Performance:
+  - Retrieval: 245ms
+  - LLM: 1823ms
+  - Total: 2068ms
 ```
 
 ## API Documentation
@@ -235,7 +317,9 @@ retrieval:
 │       └── sample_doc.md
 ├── config.yaml                   # Global configuration
 ├── docker-compose.yml
-├── run_ingestion.sh
+├── start.sh                      # Complete startup script
+├── run_ingestion.sh              # Data ingestion runner
+├── test_pipeline.sh              # End-to-end testing
 └── README.md
 ```
 
